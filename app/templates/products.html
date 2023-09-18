@@ -1,0 +1,47 @@
+<!--  наследуемся от шаблона default.html, который мы создавали для flatpages -->
+{% extends 'default.html' %}
+
+{% load custom_filters %} <!-- Подключаем новый файл с нашим фильтром -->
+{% load custom_tags %} <!-- Подключаем новый файл с нашим тегом -->
+
+<!-- Название у нас будет products -->
+{% block title %}
+Products
+{% endblock title %}
+
+<!-- В контенте на странице мы выводим все товары -->
+{% block content %}
+<h1>Все товары</h1>
+<!-- Используя переданную из вьюхи переменную time_now а применив к ней фильтр (я б назвал форматом) date.
+По назначению он очень похож на метод strftime у объекта datetime в Python - вывод времени в указанном формате-->
+<!-- Вот так выглядело использование переменной и фильтра -->
+<!-- <h3>{{ time_now|date:'M d Y' }}</h3> -->
+<!-- А вот так мы используем наш тег-->
+<h3>{% current_time '%b %d %Y' %}</h3>
+
+<!-- если в переменной next_sale будет None, то выводится указанный в фильтре текст -->
+<h3>{{ next_sale|default_if_none:"Чуть позже сообщим о распродаже!" }}</h3>
+<hr>
+{% if products %}
+    <table>
+        <tr>
+            <th>Название</th>
+            <th>Описание</th>
+            <th>Категория</th>
+            <th>Цена</th>
+            <th>количество</th>
+        </tr>
+        {% for product in products %}
+        <tr>
+            <td>{{ product.name|truncatewords:4 }}</td> <!--спецаильный фильтр truncatewords ограничивает вывод текста до указанного числа слов-->
+            <td>{{ product.description|truncatechars:15 }}</td> <!--truncatechars ограничивает вывод до указанного числа символов-->
+            <td>{{ product.category.name }}</td>
+            <td>{{ product.price|currency:"rub" }}</td>
+            <td>{{ product.quantity }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <h2>Товаров нет!</h2>
+{% endif %}
+{% endblock content %}
