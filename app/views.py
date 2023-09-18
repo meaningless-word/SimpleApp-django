@@ -12,6 +12,8 @@ class ProductsListView(ListView):
     template_name = 'products.html'
     # Это имя списка, в котором будут лежать все объекты. его нужно указывать, чтоб обратиться к списку объектов в html-шаблоне
     context_object_name = 'products'
+    # Указывает количество записей на странице
+    paginate_by = 3
 
     # Метод get_context_data позволяет нам изменить набор данных, который будет передан в шаблон
     def get_context_data(self, **kwargs):
