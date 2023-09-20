@@ -22,6 +22,15 @@ Products
 <!-- если в переменной next_sale будет None, то выводится указанный в фильтре текст -->
 <h3>{{ next_sale|default_if_none:"Чуть позже сообщим о распродаже!" }}</h3>
 <hr>
+{# Добавляем форму, которая объединяет набор полей, которые будут отправляться в запросе #}
+<form action="" method="get">
+   {# Переменная, которую мы передали через контекст, может сгенерировать нам форму с полями #}
+   {{ filterset.form.as_p }}
+   {# Добавим кнопку отправки данных формы #}
+   <input type="submit" value="Найти" />
+</form>
+<hr>
+
 {% if products %}
     <table>
         <tr>
@@ -48,10 +57,10 @@ Products
 {# Добавляем пагинацию на страницу #}
 {# информация о предыдущих страницах #}
 {% if page_obj.has_previous %}
-    <a href="?page=1">1</a>
+    <a href="?{% url_replace page=1 %}">1</a>
     {% if page_obj.previous_page_number != 1 %}
         ...
-        <a href="?page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a>
+        <a href="?{% url_replace page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
     {% endif %}
 {% endif %}
 
@@ -60,10 +69,10 @@ Products
 
 {# информация о следующих страницах #}
 {% if page_obj.has_next %}
-    <a href="?page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a>
+    <a href="?{% url_replace page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
     {% if page_obj.paginator.num_pages != page_obj.next_page_number %}
         ...
-        <a href="?page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages }}</a>
+        <a href="?{% url_replace page=page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a>
     {% endif %}
 {% endif %}
 

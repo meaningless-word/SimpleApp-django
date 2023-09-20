@@ -2,6 +2,23 @@ from django.db import models
 from django.core.validators import MinValueValidator
 
 
+# Категория, к которой будет привязываться товар
+class Category(models.Model):
+    # названия категорий тоже не должны повторяться
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name.title()
+
+
+class Material(models.Model):
+    # наименование материала
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name.title()
+
+
 # Товар для нашей витрины
 class Product(models.Model):
     name = models.CharField(max_length=50, unique=True)  # названия товаров не должны повторяться
@@ -10,15 +27,15 @@ class Product(models.Model):
     # поле категории будет ссылаться на модель категории
     category = models.ForeignKey(to='Category', on_delete=models.CASCADE, related_name='products')  # все продукты в категории будут доступны через поле products
     price = models.FloatField(validators=[MinValueValidator(0.0)])
+    materials = models.ManyToManyField(Material, through='ProductMaterial')
 
     def __str__(self):
         return f'{self.name.title()}: {self.description[:20]}'
 
 
-# Категория, к которой будет привязываться товар
-class Category(models.Model):
-    # названия категорий тоже не должны повторяться
-    name = models.CharField(max_length=100, unique=True)
+class ProductMaterial(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    material = models.ForeignKey(Material, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.name.title()
+        return f'{self.product.name} | {self.material.name}'

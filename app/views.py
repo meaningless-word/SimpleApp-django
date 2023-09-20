@@ -1,7 +1,12 @@
-from django.views.generic import ListView, DetailView
-from .models import Product
 from datetime import datetime
 
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
+from django.views.generic import ListView, DetailView
+
+from .forms import ProductForm
+from .models import Product
+from .filters import ProductFilter
 
 class ProductsListView(ListView):
     # Указываем модель, объекты которой мы будем выводить
@@ -15,6 +20,19 @@ class ProductsListView(ListView):
     # Указывает количество записей на странице
     paginate_by = 3
 
+    # Переопределяем функцию получения списка товаров
+    def get_queryset(self):
+        # получаем обычный запрос
+        queryset = super().get_queryset()
+        # используем наш класс фильтрации
+        # self.request.GET содержит объект QueryDict, который мы рассматривали ране
+        # сохраняем нашу фильтрацию в объекте класса, чтобы потом добавить в контекст
+        # и использовать в шаблоне
+        self.filterset = ProductFilter(self.request.GET, queryset)
+        # возвращаем из функции отфильтрованный список товаров
+        return self.filterset.qs
+
+
     # Метод get_context_data позволяет нам изменить набор данных, который будет передан в шаблон
     def get_context_data(self, **kwargs):
         # с помощью super() мы обращаемся к родительским классам и вызываем у них метод get_context_data с теми же аргументами,
@@ -24,7 +42,10 @@ class ProductsListView(ListView):
         context['time_now'] = datetime.utcnow()
         # добавим ещё одну пустую переменную, чтобы на её примере рассмотреть работу ещё одного фильтра
         context['next_sale'] = None
+        # добавляем в контекст объект фильтрации
+        context['filterset'] = self.filterset
         return context
+
 
 class ProductDetailView(DetailView):
     # Модель та же, но отображает отдельный товар
@@ -34,3 +55,13 @@ class ProductDetailView(DetailView):
     # Название объекта, в котором будет выбранный пользователем продукт
     context_object_name = 'product'
 
+
+def create_product(request):
+    form = ProductForm()
+    if request.method == 'POST':
+        form = ProductForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect('/products/')
+
+    return render(request, 'product_edit.html', {'form': form})
