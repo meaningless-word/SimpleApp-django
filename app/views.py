@@ -2,7 +2,8 @@ from datetime import datetime
 
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from django.views.generic import ListView, DetailView
+from django.urls import reverse_lazy
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 
 from .forms import ProductForm
 from .models import Product
@@ -56,6 +57,7 @@ class ProductDetailView(DetailView):
     context_object_name = 'product'
 
 
+# представление для создания товаров в функциональном стиле
 def create_product(request):
     form = ProductForm()
     if request.method == 'POST':
@@ -65,3 +67,26 @@ def create_product(request):
             return HttpResponseRedirect('/products/')
 
     return render(request, 'product_edit.html', {'form': form})
+
+
+# Добавляем новое представление для создания товаров посредством классов
+class ProductCreate(CreateView):
+    # указываем разработанную форму
+    form_class = ProductForm
+    # модель товаров
+    model = Product
+    # и новый шаблон, в котором используется форма
+    template_name = 'product_edit.html'
+
+
+# Добавляем представление для изменения товара.
+class ProductUpdate(UpdateView):
+    form_class = ProductForm
+    model = Product
+    template_name = 'product_edit.html'
+
+
+class ProductDelete(DeleteView):
+    model = Product
+    template_name = 'product_delete.html'
+    success_url = reverse_lazy('product_list')
