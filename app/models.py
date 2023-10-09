@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.urls import reverse
@@ -34,7 +35,7 @@ class Product(models.Model):
         return f'{self.name.title()}: {self.description[:20]}'
 
     def get_absolute_url(self):
-        return reverse('product_detail', args=[str(self.id)])
+        return reverse('product_detail', args=[str(self.id)])  # Указывает куда редиректиться после додбавления новой записи
 
 
 class ProductMaterial(models.Model):
@@ -43,3 +44,8 @@ class ProductMaterial(models.Model):
 
     def __str__(self):
         return f'{self.product.name} | {self.material.name}'
+
+
+class Subscription(models.Model):
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name='subscriptions',)
+    category = models.ForeignKey(to=Category, on_delete=models.CASCADE, related_name='subscriptions',)

@@ -10,7 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
+from dotenv import load_dotenv
 from pathlib import Path
+
+load_dotenv()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -46,6 +50,8 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.yandex',
+
+    'django_apscheduler',
 ]
 
 MIDDLEWARE = [
@@ -99,20 +105,23 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
+# AUTH_PASSWORD_VALIDATORS = [
+#     {
+#         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+#     },
+#     {
+#         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+#         'OPTIONS': {
+#             'min_length': 0,
+#         },
+#     },
+#     {
+#         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+#     },
+#     {
+#         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+#     },
+# ]
 
 
 # Internationalization
@@ -154,7 +163,29 @@ ACCOUNT_EMAIL_REQUIRED = True  # требуется мыло
 ACCOUNT_UNIQUE_EMAIL = True  # и оно уникально
 ACCOUNT_USERNAME_REQUIRED = False  # а вот юзернэйм не особо нужен
 ACCOUNT_AUTHENTICATION_METHOD = 'email'  # аутентификация по мылу
-ACCOUNT_EMAIL_VERIFICATION = 'none'  # проверок не нужно, т.к. тестовый проект
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'  # не пускать без подтверждения почты
 
 # Замена allauth'овской формы signup на самопальную
 ACCOUNT_FORMS = {"signup": "accounts.forms.CustomSignupForm"}
+
+# Настройки для отправки почты
+#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # вместо реальной рассылки писем ограничимся выводом в консоль, чтобы не забанили за спамерство
+EMAIL_HOST = 'smtp.yandex.ru'
+EMAIL_PORT = 465
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
+
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
+
+# Настройки для рассылки почты группам менеджеров и админов
+SERVER_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
+MANAGERS = (
+    ('Ivan', 'i.van@non-existen-mail.ru'),
+    ('Petr', 'pet.r@non-existen-mail.ru'),
+)
+ADMINS = (
+    ('anton', 'ant.on@non-existen-mail.ru'),
+)
