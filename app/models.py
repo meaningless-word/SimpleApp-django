@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.urls import reverse
@@ -31,12 +32,20 @@ class Product(models.Model):
     price = models.FloatField(validators=[MinValueValidator(0.0)])
     materials = models.ManyToManyField(Material, through='ProductMaterial')
 
+    # допишем свойство, которое будет отображать есть ли товар на складе
+    @property
+    def on_stock(self):
+        return self.quantity > 0
+
     def __str__(self):
         return f'{self.name.title()}: {self.description[:20]}'
 
     def get_absolute_url(self):
         return reverse('product_detail', args=[str(self.id)])  # Указывает куда редиректиться после додбавления новой записи
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs) # сначала вызываем метод родителя, чтобы объект сохранился
+        cache.delete(f'product-{self.pk}') # затем удаляем его из кэша, чтобы сбросить его
 
 class ProductMaterial(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
